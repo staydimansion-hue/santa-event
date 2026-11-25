@@ -566,6 +566,21 @@ var CONFIG = {
 
   /* ---------- 이름 가리기 ---------- */
   // 한글은 완성형 글자만(자음·모음 단독 불가) 2~10자, 띄어쓰기 1번 허용. 영문은 2~30자, 단어 사이 띄어쓰기 허용.
+  function validPhone(p) {
+    // 01X 휴대폰 형식 + 대충 넣은 번호 차단: 가운데/끝 4자리가 같은 숫자 반복(0000, 1111)이거나 연속(1234, 4321)이면 거절,
+    // 010 번호의 가운데 자리가 0·1로 시작하면 거절(실제로 쓰지 않는 번호대)
+    if (!/^01[016789]\d{7,8}$/.test(p)) return false;
+    var mid = p.slice(3, p.length - 4), last = p.slice(-4);
+    function bad(s) {
+      if (/^(\d)\1+$/.test(s)) return true;
+      var up = true, down = true;
+      for (var i = 1; i < s.length; i++) { var d = +s[i] - +s[i - 1]; if (d !== 1) up = false; if (d !== -1) down = false; }
+      return up || down;
+    }
+    if (bad(mid) || bad(last)) return false;
+    if (p.slice(0, 3) === "010" && /^[01]/.test(mid)) return false;
+    return true;
+  }
   function validName(name) {
     var s = String(name || "").trim();
     if (/^[가-힣]+( [가-힣]+)?$/.test(s)) { var n = s.replace(/ /g, "").length; return n >= 2 && n <= 10; }
@@ -801,7 +816,7 @@ var CONFIG = {
     ["insta", "name", "phone", "email", "consent"].forEach(function (k) { setErr(k, ""); });
     if (!/^[A-Za-z0-9._]{1,30}$/.test(insta)) { setErr("insta", "영문·숫자·마침표·밑줄로 된 인스타그램 계정을 입력해 주세요."); ok = false; first = first || $("insta"); }
     if (!validName(name)) { setErr("name", "이름은 한글(예: 홍길동) 또는 영문으로 입력해 주세요. 자음·모음만 있거나 숫자·기호가 들어간 이름은 쓸 수 없어요."); ok = false; first = first || $("name"); }
-    if (!/^01[016789]\d{7,8}$/.test(digits)) { setErr("phone", "010으로 시작하는 휴대폰 번호를 입력해 주세요."); ok = false; first = first || phone; }
+    if (!validPhone(digits)) { setErr("phone", "실제 쓰는 휴대폰 번호를 입력해 주세요. 0000·1111·1234처럼 반복되거나 이어지는 번호는 받을 수 없어요."); ok = false; first = first || phone; }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr("email", "이메일 주소 형식을 확인해 주세요."); ok = false; first = first || $("email"); }
     if (!$("agreePrivacy").checked || !$("agreeAge").checked) { setErr("consent", "필수 항목 두 가지에 체크해야 응모할 수 있어요."); ok = false; first = first || $("agreePrivacy"); }
     if (first) first.focus();

@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>산타를 찾아라 · 스테이디멘션</title>
+<meta name="description" content="스테이디멘션 외벽의 산타를 찍어 인스타 스토리에 올리고 응모하세요. 추첨으로 숙박권을 드립니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400&family=Noto+Sans+KR:wght@300;400;500&display=swap">
+<style>
+/* 레이아웃: 실제 숙소 외벽 사진으로 여는 밤 장면 → 선물 더미와 걷는 산타 → 응모 폼. 오른쪽 가장자리에 참여자 명단 서랍.
+   톤: 산타 영상(눈 내리는 남색 밤, 창문·원목의 호박색 불빛, 빨강·초록 풍선 글자, 금색 포인트, 트리 전구). 밤 장면 한 가지로 고정한 디자인 */
+:root {
+  --night: #0a1222;
+  --night-2: #111c33;
+  --panel: #14213c;
+  --line: #2a3a5c;
+  --snow: #fff7ea;
+  --muted: #b9c3d6;
+  --amber: #f5b95a;
+  --gold: #e9bd57;
+  --red: #d9302c;
+  --red-deep: #9e1419;
+  --green: #1f8f45;
+  --green-deep: #0f5a2a;
+  --ok: #8fd3a8;
+  --err: #ff9b8f;
+  --display: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --round: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--night);
+  color: var(--snow);
+  font-family: var(--body);
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+.label { font-size: 12px; letter-spacing: .14em; color: var(--amber); }
+
+/* 눈 */
+#snow { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+
+/* 히어로 */
+.hero { position: relative; z-index: 2; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 48px; align-items: center; padding-block: 56px 40px; }
+.hero-photo { position: relative; border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 5; max-width: 100%; background: linear-gradient(180deg, #24344f, #121c2c); }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; }
+.hero-photo .fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; padding: 24px; }
+.hero-photo figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; font-size: 12px; color: var(--snow); background: linear-gradient(transparent, rgba(8, 12, 20, .75)); }
+.hero-copy { display: grid; gap: 22px; }
+.hero-copy h1 { font-size: clamp(34px, 5.4vw, 58px); line-height: 1.22; }
+.hero-copy h1 em { font-style: normal; color: var(--amber); }
+.hero-copy p { margin: 0; color: var(--muted); max-width: 32em; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.steps b { font-family: var(--display); font-weight: 400; color: var(--amber); font-size: 18px; }
+.tag { font-weight: 500; color: var(--snow); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 26px; border-radius: 999px; border: 1px solid var(--amber); background: var(--amber); color: #1b1408; font: 500 15px var(--body); cursor: pointer; text-decoration: none; }
+.btn.ghost { background: transparent; color: var(--amber); }
+.btn:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.btn[disabled] { opacity: .6; cursor: progress; }
+
+/* 경품 */
+.prizes { position: relative; z-index: 2; padding-block: 28px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.prize-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.prize { display: grid; gap: 4px; padding: 6px 0; }
+.prize .rank { font-family: var(--display); font-size: 26px; color: var(--amber); line-height: 1.2; }
+.prize .what { font-size: 16px; }
+.prize .note { font-size: 13px; color: var(--muted); }
+
+/* 선물 더미 */
+.pile-sec { position: relative; z-index: 2; padding-block: 56px 24px; }
+.pile-head { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+.pile-head h2 { font-size: clamp(24px, 3.4vw, 34px); }
+.count { font-family: var(--display); font-size: 44px; line-height: 1; color: var(--amber); font-variant-numeric: tabular-nums; }
+.count small { font-family: var(--body); font-size: 14px; color: var(--muted); margin-left: 6px; }
+.stage { position: relative; height: 380px; border-radius: 4px; overflow: hidden; background: radial-gradient(120% 80% at 50% 100%, #233654 0%, var(--night-2) 55%, var(--night) 100%); border: 1px solid var(--line); }
+.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: linear-gradient(180deg, #dfe6ee, #b9c6d6); }
+.ground::before { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 20px; background: radial-gradient(14px 10px at 14px 10px, #dfe6ee 98%, transparent) 0 0 / 28px 20px repeat-x; }
+.pile { position: absolute; left: 50%; bottom: 54px; transform: translateX(-50%); width: 94%; top: 24px; }
+.stage.big { height: 560px; }
+.box { position: absolute; border-radius: 3px; display: grid; place-items: center; transition: transform .5s cubic-bezier(.2, .9, .3, 1.3), opacity .5s; }
+.box::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 14%; transform: translateX(-50%); background: var(--rib); }
+.box::after { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 14%; transform: translateY(-50%); background: var(--rib); }
+.box span { position: relative; z-index: 1; font-size: var(--fs, 11px); font-weight: 500; color: #fff; background: rgba(10, 14, 22, .55); padding: 0 5px; border-radius: 3px; white-space: nowrap; max-width: 96%; overflow: hidden; text-overflow: ellipsis; }
+.box.tiny span { display: none; }
+.box.new { animation: drop .9s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes drop { from { transform: translateY(-340px) rotate(-8deg); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
+.empty-note { position: absolute; left: 0; right: 0; top: 34%; text-align: center; color: var(--muted); font-size: 14px; padding: 0 24px; }
+.santa { position: absolute; bottom: 30px; left: 0; width: 74px; height: 96px; will-change: transform; z-index: 3; }
+.santa svg { width: 100%; height: 100%; overflow: visible; }
+.santa .leg { transform-box: view-box; animation: swing .5s ease-in-out infinite alternate; }
+.santa .leg-l { transform-origin: 30px 72px; }
+.santa .leg-r { transform-origin: 43px 72px; animation-delay: -.5s; }
+@keyframes swing { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+.santa .bob { animation: bob .5s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-3px); } }
+.pile-foot { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+/* 폼 */
+.form-sec { position: relative; z-index: 2; padding-block: 48px 80px; }
+.form-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 48px; }
+.form-intro { display: grid; gap: 14px; align-content: start; }
+.form-intro h2 { font-size: clamp(26px, 3.6vw, 36px); }
+.form-intro p { margin: 0; color: var(--muted); }
+form { display: grid; gap: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 28px clamp(18px, 3vw, 32px); }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field > label, .field > .flabel { font-size: 13px; color: var(--muted); }
+.req { color: var(--amber); margin-left: 2px; }
+.opt { font-size: 11px; color: var(--muted); margin-left: 4px; }
+input[type=text], input[type=tel], input[type=email], select { width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--night-2); color: var(--snow); font: 400 15px var(--body); }
+input::placeholder { color: #6f7d93; }
+.prefix { position: relative; }
+.prefix span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.prefix input { padding-left: 28px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; }
+.seg span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.seg input:checked + span { border-color: var(--amber); color: var(--snow); background: rgba(240, 194, 126, .12); }
+.seg input:focus-visible + span { outline: 2px solid var(--amber); outline-offset: 2px; }
+.err { font-size: 12px; color: var(--err); min-height: 0; }
+.consents { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 16px; }
+.check { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; }
+.check input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--amber); }
+details { font-size: 13px; color: var(--muted); margin-left: 32px; }
+details summary { cursor: pointer; color: var(--amber); }
+details table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+details th, details td { text-align: left; vertical-align: top; padding: 6px 8px 6px 0; border-top: 1px solid var(--line); font-weight: 300; }
+details th { width: 30%; color: var(--snow); font-weight: 400; }
+.form-msg { font-size: 14px; min-height: 1.4em; }
+.form-msg.bad { color: var(--err); }
+.submit-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.fine { font-size: 12px; color: var(--muted); }
+
+/* 응모 완료 연출 */
+.reveal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(6, 10, 18, .82); padding: 24px; }
+.reveal-inner { display: grid; justify-items: center; gap: 18px; text-align: center; }
+.gift { position: relative; width: 170px; height: 150px; animation: giftIn .8s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes giftIn { from { transform: translateY(-60vh) rotate(-10deg); } to { transform: none; } }
+.gift .base { position: absolute; left: 10px; right: 10px; bottom: 0; height: 110px; background: var(--red); border-radius: 3px; }
+.gift .base::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 22px; transform: translateX(-50%); background: var(--amber); }
+.gift .lid { position: absolute; left: 0; right: 0; top: 18px; height: 34px; background: #d9564c; border-radius: 3px; transform-origin: 12% 100%; animation: lidOpen .7s .9s ease-out both; }
+.gift .lid::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 22px; transform: translateX(-50%); background: var(--amber); }
+.gift .bow { position: absolute; left: 50%; top: -14px; width: 56px; height: 32px; transform: translateX(-50%); }
+.gift .bow::before, .gift .bow::after { content: ""; position: absolute; top: 0; width: 26px; height: 26px; border: 6px solid var(--amber); border-radius: 50% 50% 4px 50%; }
+.gift .bow::before { left: 0; transform: rotate(-30deg); }
+.gift .bow::after { right: 0; transform: scaleX(-1) rotate(-30deg); }
+@keyframes lidOpen { to { transform: translate(-30px, -60px) rotate(-38deg); } }
+.glow { position: absolute; left: 50%; top: 40px; width: 140px; height: 140px; transform: translate(-50%, -50%) scale(.2); border-radius: 50%; background: radial-gradient(circle, rgba(240, 194, 126, .7), transparent 65%); opacity: 0; animation: glow 1s 1.1s ease-out both; }
+@keyframes glow { to { opacity: 1; transform: translate(-50%, -50%) scale(1.6); } }
+.reveal-name { font-family: var(--display); font-size: clamp(30px, 7vw, 46px); color: var(--amber); opacity: 0; animation: rise .9s 1.3s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(70px) scale(.7); } to { opacity: 1; transform: none; } }
+.reveal-sub { color: var(--muted); max-width: 26em; opacity: 0; animation: fade .6s 1.9s both; }
+.reveal .btn { opacity: 0; animation: fade .6s 2.2s both; }
+@keyframes fade { to { opacity: 1; } }
+
+/* 명단 서랍 */
+.drawer-tab { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 30; writing-mode: vertical-rl; display: flex; align-items: center; gap: 8px; padding: 16px max(10px, env(safe-area-inset-right, 0px)) 16px 10px; border: 1px solid var(--line); border-right: 0; border-radius: 8px 0 0 8px; background: var(--panel); color: var(--snow); font: 400 14px var(--body); letter-spacing: .1em; cursor: pointer; }
+.drawer-tab b { writing-mode: horizontal-tb; font-weight: 500; color: var(--amber); font-variant-numeric: tabular-nums; }
+.search { display: grid; gap: 6px; padding: 14px max(20px, env(safe-area-inset-right, 0px)) 10px 20px; border-bottom: 1px solid var(--line); }
+.search label { font-size: 12px; color: var(--muted); }
+.search input { width: 100%; min-height: 42px; padding: 8px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--night); color: var(--snow); font: 400 16px var(--body); letter-spacing: .2em; font-variant-numeric: tabular-nums; }
+.search-note { margin: 0; font-size: 12px; color: var(--muted); min-height: 1.2em; }
+.list li.hit .tail { color: var(--amber); }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 35; width: min(360px, 88vw); background: var(--night-2); border-left: 1px solid var(--line); transform: translateX(100%); transition: transform .35s ease; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.drawer.open { transform: none; }
+.drawer header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px max(20px, env(safe-area-inset-right, 0px)) 14px 20px; border-bottom: 1px solid var(--line); }
+.drawer header h3 { font-size: 20px; }
+.x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--snow); font-size: 18px; cursor: pointer; }
+.list { overflow-y: auto; margin: 0; padding: 6px max(20px, env(safe-area-inset-right, 0px)) 6px 20px; list-style: none; }
+.list li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.list .no { color: var(--muted); font-size: 12px; }
+.list .who { font-size: 15px; }
+.list .tail { color: var(--muted); font-size: 13px; }
+.drawer footer { padding: 12px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+.scrim { position: fixed; inset: 0; z-index: 34; background: rgba(0, 0, 0, .4); }
+
+.foot { position: relative; z-index: 2; border-top: 1px solid var(--line); padding-block: 28px 40px; font-size: 12px; color: var(--muted); }
+.foot p { margin: 0 0 6px; }
+
+@media (max-width: 820px) {
+  .hero-grid, .form-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hero-grid { padding-block: 28px 32px; }
+  .hero-photo { aspect-ratio: 4 / 5; }
+  .prize-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .prize { grid-template-columns: 72px minmax(0, 1fr); align-items: baseline; gap: 2px 12px; }
+  .prize .note { grid-column: 2; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .stage { height: 320px; }
+  .drawer-tab { top: auto; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: none; padding: 12px max(6px, env(safe-area-inset-right, 0px)) 12px 6px; font-size: 12px; background: rgba(27, 42, 66, .92); }
+  .stage.big { height: 460px; }
+}
+/* ===== 크리스마스 톤 ===== */
+.backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(42% 30% at 88% 92%, rgba(245, 185, 90, .20), transparent 70%),
+    radial-gradient(36% 26% at 6% 60%, rgba(217, 48, 44, .14), transparent 70%),
+    radial-gradient(40% 28% at 30% 8%, rgba(31, 143, 69, .12), transparent 70%),
+    linear-gradient(180deg, #0c1730 0%, var(--night) 55%, #0b0f1c 100%); }
+.foil { -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+.foil-red { background-image: linear-gradient(175deg, #ffb3a6 0%, #ff4a3d 22%, #d9302c 48%, #8f1015 72%, #ff6a5a 100%); filter: drop-shadow(0 0 14px rgba(217, 48, 44, .55)); }
+.foil-green { background-image: linear-gradient(175deg, #b6f5c4 0%, #3ccf6b 25%, #1f8f45 52%, #0b4f24 76%, #52d97c 100%); filter: drop-shadow(0 0 12px rgba(31, 143, 69, .55)); }
+.foil-gold { background-image: linear-gradient(175deg, #fff1c2 0%, #f5c85a 30%, #c98d22 62%, #ffe08a 100%); filter: drop-shadow(0 0 10px rgba(233, 189, 87, .45)); }
+
+/* 전구 줄 */
+.garland { position: relative; z-index: 3; height: 46px; overflow: hidden; }
+.garland svg { position: absolute; left: 0; top: 0; width: 100%; height: 46px; }
+.bulb { position: absolute; top: 0; width: 10px; height: 15px; border-radius: 50% 50% 45% 45%; transform-origin: 50% 0; animation: twinkle 2.4s ease-in-out infinite; }
+.bulb::before { content: ""; position: absolute; left: 2px; top: -4px; width: 6px; height: 5px; border-radius: 1px; background: #3b3f46; }
+@keyframes twinkle { 0%, 100% { opacity: 1; filter: brightness(1.15); } 50% { opacity: .55; filter: brightness(.8); } }
+
+.hero-copy .label { font-family: var(--round); font-size: 15px; letter-spacing: .08em; }
+.hero-copy h1 { font-family: var(--display); }
+.hero-copy h1 em { font-family: var(--round); font-size: 1.08em; }
+.hero-photo { box-shadow: 0 0 0 1px rgba(233, 189, 87, .35), 0 30px 80px -20px rgba(245, 185, 90, .35); }
+.steps b { font-family: var(--round); color: var(--gold); }
+.tag { border-color: rgba(233, 189, 87, .5); background: rgba(233, 189, 87, .1); }
+.btn { border: 1px solid var(--gold); background: var(--red); color: #fff; box-shadow: none; }
+.btn.ghost { background: transparent; color: var(--gold); }
+.label { color: var(--gold); }
+
+/* 경품: 선물 태그 */
+.prizes { border-color: rgba(233, 189, 87, .25); }
+.prize-row { gap: 18px; }
+.prize { position: relative; overflow: hidden; padding: 20px 22px 18px; border-radius: 6px; gap: 2px; color: #fff; }
+.prize::before { content: ""; position: absolute; top: 0; bottom: 0; right: 26px; width: 10px; background: var(--rib); opacity: .9; }
+.prize::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 10px; margin-top: -5px; background: var(--rib); opacity: .25; }
+.prize > * { position: relative; z-index: 1; }
+.prize.p1 { background: linear-gradient(160deg, #e8463c, #a5161b); --rib: var(--gold); }
+.prize.p2 { background: linear-gradient(160deg, #2aa457, #0f5a2a); --rib: #f3e3c0; }
+.prize.p3 { background: linear-gradient(160deg, #f1c766, #b98222); --rib: #c9302c; color: #2a1a05; }
+.prize .rank { font-family: var(--round); color: inherit; font-size: 30px; }
+.prize .what { font-size: 16px; }
+
+/* 선물 더미 무대: 창가처럼 따뜻한 빛 + 트리 */
+.pile-head h2 { font-family: var(--display); }
+.count { font-family: var(--round); }
+.count span { background-image: linear-gradient(175deg, #fff1c2 0%, #f5c85a 35%, #c98d22 70%, #ffe08a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stage { border-color: rgba(233, 189, 87, .3); background:
+  radial-gradient(60% 55% at 12% 100%, rgba(245, 185, 90, .30), transparent 70%),
+  radial-gradient(50% 45% at 92% 100%, rgba(245, 185, 90, .18), transparent 70%),
+  linear-gradient(180deg, #0d1a36 0%, #13244a 60%, #1b2c52 100%); }
+.tree { position: absolute; left: 2%; bottom: 46px; width: clamp(90px, 14%, 150px); z-index: 2; pointer-events: none; }
+.tree .tl { animation: twinkle 1.8s ease-in-out infinite; }
+.pile { z-index: 1; }
+
+/* 폼: 사탕 지팡이 띠 */
+form { border-color: rgba(233, 189, 87, .3); background: linear-gradient(180deg, #172748, #111d36); position: relative; overflow: hidden; padding-top: 34px; }
+form::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: repeating-linear-gradient(135deg, var(--red) 0 14px, var(--snow) 14px 28px, var(--green) 28px 42px, var(--snow) 42px 56px); }
+.form-intro h2 { font-family: var(--display); }
+.seg input:checked + span { border-color: var(--red); background: rgba(217, 48, 44, .16); }
+.check input { accent-color: var(--red); }
+details summary { color: var(--gold); }
+
+/* 명단 서랍 */
+.drawer-tab { border-color: rgba(233, 189, 87, .4); background: linear-gradient(180deg, #1f8f45, #0f5a2a); }
+.drawer-tab b { color: #fff1c2; }
+.drawer { background: linear-gradient(180deg, #0f2a22, #0c1a2c 40%); }
+.drawer header h3 { font-family: var(--round); }
+
+/* 경품: 객실 사진 카드 (사용자 확정 C안) */
+.prizes { padding-block: 40px; border: 0; }
+.pcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.pcard { position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 4 / 5; max-width: 100%; }
+.pcard img { width: 100%; height: 100%; object-fit: cover; }
+.pcard .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 20px 18px; background: linear-gradient(transparent, rgba(8, 12, 22, .86)); display: grid; gap: 2px; }
+.pcard .rk { font: 300 34px/1.1 var(--display); color: #fff; }
+.pcard .nm { font-size: 15px; color: #f2ece2; }
+.pcard .chip { position: absolute; top: 14px; left: 14px; width: 30px; height: 4px; border-radius: 2px; }
+.pcard.c1 .chip { background: var(--red); } .pcard.c2 .chip { background: var(--green); } .pcard.c3 .chip { background: var(--gold); }
+@media (max-width: 820px) { .pcards { grid-template-columns: minmax(0, 1fr); } .pcard { aspect-ratio: 16 / 10; } }
+
+/* 서체: 제목 고딕 A1 Light, 본문 본고딕 Light (사용자 확정 T1·B1) */
+h1, h2, h3, .count, .prize .rank, .reveal-name, .steps b { font-weight: 300; }
+.hero-copy .label { font-size: 15px; letter-spacing: .06em; font-weight: 400; }
+.hero-copy h1 { font-size: clamp(36px, 5.2vw, 56px); line-height: 1.22; letter-spacing: -.01em; }
+.hero-copy h1 em { font-size: 1em; }
+.steps b { font-size: 18px; }
+.label { font-family: var(--round); font-size: 12px; letter-spacing: .14em; font-weight: 400; }
+.pile-head h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.3; }
+.count { font-size: 46px; }
+.form-intro h2 { font-size: clamp(28px, 3.6vw, 38px); line-height: 1.2; }
+.prize .rank { font-size: 28px; line-height: 1.2; }
+.drawer header h3 { font-size: 20px; }
+.reveal-name { font-family: var(--round); font-size: clamp(32px, 7vw, 48px); line-height: 1.2; }
+/* 버튼: P8 빨강 + 사탕 지팡이 띠, 그림자 없음 (사용자 확정) */
+.btn, .btn.ghost { position: relative; overflow: hidden; border: 0; border-radius: 8px; background: var(--red); color: #fff; box-shadow: none; font: 400 16px var(--body); }
+.btn::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: repeating-linear-gradient(135deg, var(--snow) 0 8px, var(--green) 8px 16px); }
+.cta { display: flex; }
+.cta .btn { width: 100%; max-width: 440px; }
+.submit-row { flex-direction: column; align-items: stretch; }
+.submit-row .btn { width: 100%; min-height: 54px; font-size: 17px; }
+.submit-row .form-msg { text-align: center; }
+
+@media (max-width: 820px) {
+  .cta .btn { max-width: none; }
+  .prize-row { gap: 10px; }
+  .prize { padding: 14px 18px; }
+  .tree { width: 84px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+  #snow { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"></div>
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="garland" id="garland" aria-hidden="true"></div>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <figure class="hero-photo" style="margin:0">
+      <img id="heroImg" src="images/santa-side.jpg" alt="스테이디멘션 건물 옆벽을 타고 오르는 대형 산타 풍선" onerror="this.remove(); document.getElementById('heroFallback').hidden = false;">
+      <div class="fallback" id="heroFallback" hidden>숙소 옆벽 산타 사진 자리<br>images/santa-side.jpg</div>
+      <figcaption>인천 미추홀구 스테이디멘션 옆벽, 지금 산타가 올라가고 있어요</figcaption>
+    </figure>
+    <div class="hero-copy">
+      <span class="label foil foil-green">메리 크리스마스 · 스테이디멘션</span>
+      <h1>벽에 매달린 <em class="foil foil-red">산타</em>를<br>찍어 주세요</h1>
+      <p>스테이디멘션에 산타가 도착했어요. 산타 사진을 직접 찍어 인스타그램 스토리에 올리고, 아래에서 응모하면 추첨으로 숙박권을 드려요.</p>
+      <ol class="steps">
+        <li><b>1</b><span>스테이디멘션 옆벽의 산타를 찍어요.</span></li>
+        <li><b>2</b><span>인스타그램 스토리에 올리면서 <span class="tag" data-tag>@dimansion_official</span>을 태그해요.</span></li>
+        <li><b>3</b><span>이 페이지에서 응모하면 선물상자가 하나 쌓여요.</span></li>
+      </ol>
+      <div class="cta"><a class="btn" href="#apply">응모하러 가기</a></div>
+      <p class="fine" id="periodLine"></p>
+    </div>
+  </div>
+</section>
+
+<section class="prizes">
+  <div class="wrap pcards">
+    <div class="pcard c1"><img src="images/prize-private.jpg" alt="프라이빗룸 객실"><span class="chip"></span><div class="cap"><span class="rk">1등</span><span class="nm">프라이빗룸 숙박권</span></div></div>
+    <div class="pcard c2"><img src="images/prize-dorm.jpg" alt="도미토리 객실"><span class="chip"></span><div class="cap"><span class="rk">2등</span><span class="nm">도미토리 숙박권 (2인)</span></div></div>
+    <div class="pcard c3"><img src="images/prize-standard.jpg" alt="스탠다드룸 객실"><span class="chip"></span><div class="cap"><span class="rk">3등</span><span class="nm">스탠다드 숙박권</span></div></div>
+  </div>
+</section>
+
+<section class="pile-sec" aria-labelledby="pileTitle">
+  <div class="wrap">
+    <div class="pile-head">
+      <div>
+        <span class="label">GIFT PILE</span>
+        <h2 id="pileTitle">응모할 때마다 선물상자가 하나씩 쌓여요</h2>
+      </div>
+      <div class="count" aria-live="polite"><span id="countNum">0</span><small>명 참여</small></div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="ground"></div>
+      <svg class="tree" viewBox="0 0 120 170" aria-hidden="true">
+        <rect x="52" y="140" width="16" height="22" rx="2" fill="#6b4428"/>
+        <path d="M60 14 L100 70 H82 L110 108 H88 L116 146 H4 L32 108 H10 L38 70 H20 Z" fill="#1f7a3d"/>
+        <path d="M60 14 L100 70 H82 L110 108 H88 L116 146 H60 Z" fill="#17652f"/>
+        <path d="M22 72 Q60 92 98 68 M14 110 Q60 132 106 106" stroke="#e9bd57" stroke-width="2" fill="none" opacity=".8"/>
+        <g>
+          <circle class="tl" cx="40" cy="80" r="4" fill="#ff5a4a"/>
+          <circle class="tl" cx="74" cy="84" r="4" fill="#ffd36b" style="animation-delay:-.6s"/>
+          <circle class="tl" cx="58" cy="60" r="3.5" fill="#8ee3a6" style="animation-delay:-1.1s"/>
+          <circle class="tl" cx="28" cy="118" r="4.5" fill="#ffd36b" style="animation-delay:-.3s"/>
+          <circle class="tl" cx="60" cy="124" r="4.5" fill="#ff5a4a" style="animation-delay:-1.4s"/>
+          <circle class="tl" cx="92" cy="116" r="4.5" fill="#f3f1ec" style="animation-delay:-.9s"/>
+          <circle class="tl" cx="46" cy="100" r="3.5" fill="#f3f1ec" style="animation-delay:-1.7s"/>
+          <circle class="tl" cx="80" cy="102" r="3.5" fill="#ff5a4a" style="animation-delay:-.2s"/>
+        </g>
+        <path d="M60 2 L63.5 10 L72 10.5 L65.5 15.5 L68 24 L60 19 L52 24 L54.5 15.5 L48 10.5 L56.5 10 Z" fill="#f5c85a"/>
+      </svg>
+      <div class="pile" id="pile"></div>
+      <p class="empty-note" id="emptyNote" hidden>아직 쌓인 선물이 없어요. 첫 번째 선물상자를 올려 주세요.</p>
+      <div class="santa" id="santa" aria-hidden="true">
+        <svg viewBox="0 0 74 96">
+          <g class="bob">
+            <ellipse cx="37" cy="93" rx="22" ry="3" fill="rgba(0,0,0,.18)"/>
+            <g class="leg leg-r">
+              <rect x="39" y="72" width="9" height="16" rx="3" fill="#a8352f"/>
+              <rect x="38" y="85" width="14" height="7" rx="3" fill="#1d1d22"/>
+            </g>
+            <g class="leg leg-l">
+              <rect x="26" y="72" width="9" height="16" rx="3" fill="#b23a33"/>
+              <rect x="23" y="85" width="14" height="7" rx="3" fill="#1d1d22"/>
+            </g>
+            <path d="M18 48 Q37 36 56 48 L58 76 Q37 82 16 76 Z" fill="#c8463d"/>
+            <rect x="16" y="62" width="42" height="6" fill="#1d1d22"/>
+            <rect x="33" y="61" width="8" height="8" rx="1" fill="#f0c27e"/>
+            <path d="M18 74 Q37 80 58 74 L58 79 Q37 85 16 79 Z" fill="#f3f1ec"/>
+            <rect x="9" y="50" width="10" height="20" rx="5" fill="#c8463d" transform="rotate(14 14 50)"/>
+            <circle cx="11" cy="70" r="4.5" fill="#1d1d22"/>
+            <g transform="translate(52 40)">
+              <path d="M0 6 Q12 -6 24 6 L26 30 Q12 36 -2 30 Z" fill="#3f7d5e"/>
+              <path d="M8 2 Q12 -4 16 2" stroke="#f0c27e" stroke-width="2" fill="none"/>
+            </g>
+            <circle cx="37" cy="34" r="12" fill="#f2c7a5"/>
+            <path d="M24 36 Q37 58 50 36 Q46 44 37 45 Q28 44 24 36 Z" fill="#f3f1ec"/>
+            <ellipse cx="37" cy="38" rx="6" ry="2.5" fill="#f3f1ec"/>
+            <circle cx="33" cy="32" r="1.3" fill="#1d1d22"/>
+            <circle cx="41" cy="32" r="1.3" fill="#1d1d22"/>
+            <circle cx="37" cy="35" r="2" fill="#e39a86"/>
+            <path d="M24 28 Q30 10 46 12 Q56 14 60 26 L50 25 Q42 18 26 28 Z" fill="#c8463d"/>
+            <rect x="23" y="25" width="28" height="6" rx="3" fill="#f3f1ec"/>
+            <circle cx="61" cy="27" r="4" fill="#f3f1ec"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <p class="pile-foot" id="pileFoot">상자에는 이름 가운데 글자를 가려서 보여 드려요. 전체 명단은 오른쪽 <b>참여자 명단</b> 버튼에서 볼 수 있어요.</p>
+  </div>
+</section>
+
+<section class="form-sec" id="apply" aria-labelledby="formTitle">
+  <div class="wrap form-grid">
+    <div class="form-intro">
+      <span class="label">ENTRY</span>
+      <h2 id="formTitle">응모하기</h2>
+      <p>스토리를 올린 인스타그램 계정으로 응모해 주세요. 당첨되면 이 계정의 스토리와 입력한 전화번호로 확인해요.</p>
+      <p class="fine">스토리는 공개 계정으로 올려 주세요. 비공개 계정은 태그를 확인할 수 없어요. 전화번호 하나당 한 번만 응모할 수 있어요.</p>
+    </div>
+
+    <form id="entryForm" novalidate>
+      <div class="field">
+        <label for="insta">인스타그램 계정<span class="req">*</span></label>
+        <div class="prefix"><span>@</span><input id="insta" name="insta" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="스토리를 올린 계정" maxlength="30"></div>
+        <div class="err" id="err-insta"></div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="name">이름<span class="req">*</span></label>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="홍길동" maxlength="30">
+          <div class="err" id="err-name"></div>
+        </div>
+        <div class="field">
+          <label for="phone">휴대폰 번호<span class="req">*</span></label>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" maxlength="13">
+          <div class="err" id="err-phone"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <span class="flabel" id="genderLabel">성별<span class="opt">선택</span></span>
+          <div class="seg" role="radiogroup" aria-labelledby="genderLabel">
+            <label><input type="radio" name="gender" id="g-f" value="여성"><span>여성</span></label>
+            <label><input type="radio" name="gender" id="g-m" value="남성"><span>남성</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel" id="stayLabel">스테이디멘션에 묵어 본 적이 있나요?<span class="opt">선택</span></span>
+          <div class="seg" role="radiogroup" aria-labelledby="stayLabel">
+            <label><input type="radio" name="stayed" id="s-y" value="있음"><span>있어요</span></label>
+            <label><input type="radio" name="stayed" id="s-n" value="없음"><span>처음이에요</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="email">이메일<span class="opt">선택</span></label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" maxlength="80">
+          <div class="err" id="err-email"></div>
+        </div>
+        <div class="field">
+          <label for="region">사는 지역<span class="opt">선택</span></label>
+          <select id="region" name="region">
+            <option value="">선택 안 함</option>
+            <option>인천</option><option>서울</option><option>경기</option><option>강원</option>
+            <option>충북</option><option>충남·대전·세종</option><option>전북</option><option>전남·광주</option>
+            <option>경북·대구</option><option>경남·부산·울산</option><option>제주</option><option>해외</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="consents">
+        <label class="check"><input type="checkbox" id="agreePrivacy"><span>[필수] 개인정보 수집·이용에 동의합니다.</span></label>
+        <details>
+          <summary>자세히 보기</summary>
+          <table>
+            <tr><th>수집 항목</th><td>필수: 인스타그램 계정, 이름, 휴대폰 번호<br>선택: 성별, 이메일, 사는 지역, 숙박 경험</td></tr>
+            <tr><th>이용 목적</th><td>이벤트 응모 확인, 중복 응모 확인, 추첨, 당첨 안내와 경품 지급</td></tr>
+            <tr><th>보유 기간</th><td>당첨자 발표 후 30일 이내에 파기해요. 경품 제세공과금 처리에 필요한 당첨자 정보는 관련 법령이 정한 기간 동안 보관해요.</td></tr>
+            <tr><th>동의 거부</th><td>동의하지 않을 수 있어요. 필수 항목에 동의하지 않으면 응모할 수 없어요.</td></tr>
+          </table>
+          <p style="margin:8px 0 0">참여자 명단과 선물상자에는 가린 이름(예: 이ㅇ훈)과 휴대폰 번호 뒤 4자리만 보여요.</p>
+        </details>
+        <label class="check"><input type="checkbox" id="agreeAge"><span>[필수] 만 19세 이상입니다.</span></label>
+        <label class="check"><input type="checkbox" id="agreeMarketing"><span>[선택] 스테이디멘션의 할인·이벤트 소식을 문자와 이메일로 받을게요.</span></label>
+        <div class="err" id="err-consent"></div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn" type="submit" id="submitBtn">선물상자 올리기</button>
+        <span class="form-msg" id="formMsg" role="status"></span>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>스테이디멘션 · 인천 미추홀구 · 인스타그램 @dimansion_official</p>
+    <p id="rulesLine">당첨자는 응모한 휴대폰 번호로 개별 연락드려요. 숙박권 사용 기간과 사용 불가일은 당첨 안내 때 함께 알려 드려요.</p>
+  </div>
+</footer>
+
+<button class="drawer-tab" id="drawerTab" type="button" aria-controls="drawer" aria-expanded="false">참여자 명단 <b id="tabCount">0</b></button>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="참여자 명단" aria-hidden="true">
+  <header>
+    <h3>참여자 명단</h3>
+    <button class="x" type="button" id="drawerClose" aria-label="명단 닫기">✕</button>
+  </header>
+  <div class="search">
+    <label for="tailSearch">전화번호 뒷자리로 찾기</label>
+    <input id="tailSearch" type="search" inputmode="numeric" maxlength="4" placeholder="예: 4444" autocomplete="off">
+    <p class="search-note" id="searchNote" aria-live="polite"></p>
+  </div>
+  <ol class="list" id="list"></ol>
+  <footer id="drawerFoot">이름 가운데 글자와 전화번호 앞자리는 가려서 보여요.</footer>
+</aside>
+
+<div class="reveal" id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="revealName">
+  <div class="reveal-inner">
+    <div class="gift" aria-hidden="true"><div class="glow"></div><div class="base"></div><div class="lid"><div class="bow"></div></div></div>
+    <div class="reveal-name" id="revealName"></div>
+    <p class="reveal-sub" id="revealSub"></p>
+    <button class="btn ghost" type="button" id="revealClose">선물 더미 보러 가기</button>
+  </div>
+</div>
+
+<script>
+/* ===== 설정: 배포 전에 여기만 채우면 된다 ===== */
+var CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbw0KnGc3BTXCLP8zBGA8gW5H8QzcAQrvtqKH3sFA8auaSAGms5db3sKSYXQZLlDTQkH/exec",                       // Apps Script 웹앱 /exec 주소. 비워 두면 이 브라우저에만 저장하는 미리보기 모드
+  TAG: "@dimansion_official",        // 스토리에 태그할 계정
+  PERIOD: "12월 24일(목)까지",        // 응모 마감
+  DRAW_DATE: "12월 25일(금)",         // 당첨자 발표일
+  MAX_BOXES: 1000                    // 화면에 쌓아 보여 줄 상자 수(최근 응모 순)
+};
+
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var entries = [];          // 최신순 [{n, p, t}]
+  // 로컬 테스트 서버(local-server.js, 5050번)로 열면 그 서버에 저장한다
+  if (!CONFIG.API_URL && location.protocol.indexOf("http") === 0 && location.port === "5050") CONFIG.API_URL = "/api";
+  var DEMO = !CONFIG.API_URL;
+  var DEMO_KEY = "santa-event-demo";
+
+  document.querySelectorAll("[data-tag]").forEach(function (el) { el.textContent = CONFIG.TAG; });
+  var bits = [];
+  if (CONFIG.PERIOD) bits.push("응모 " + CONFIG.PERIOD);
+  if (CONFIG.DRAW_DATE) bits.push("당첨자 발표 " + CONFIG.DRAW_DATE);
+  $("periodLine").textContent = bits.join(" · ");
+
+  /* ---------- 이름 가리기 ---------- */
+  function maskName(name) {
+    var c = Array.from(String(name || "").trim());
+    if (c.length <= 1) return c.join("");
+    if (c.length === 2) return c[0] + "ㅇ";
+    return c[0] + "ㅇ".repeat(c.length - 2) + c[c.length - 1];
+  }
+
+  /* ---------- 데이터 ---------- */
+  function demoLoad() {
+    try { return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function demoSave(list) {
+    try { localStorage.setItem(DEMO_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function fetchList() {
+    if (DEMO) { entries = demoLoad(); render(false); return Promise.resolve(); }
+    return fetch(CONFIG.API_URL, { method: "GET" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d && d.ok) { entries = d.entries || []; render(false); } })
+      .catch(function () { $("pileFoot").textContent = "명단을 불러오지 못했어요. 잠시 후 새로고침해 주세요."; });
+  }
+  function submitEntry(payload) {
+    if (DEMO) {
+      var list = demoLoad();
+      var digits = payload.phone.replace(/\D/g, "");
+      if (list.some(function (x) { return x._d === digits; })) {
+        return Promise.resolve({ ok: false, code: "duplicate", message: "이미 응모한 전화번호예요. 응모는 한 번만 할 수 있어요." });
+      }
+      var item = { n: maskName(payload.name), p: digits.slice(-4), t: new Date().toISOString(), _d: digits };
+      list.unshift(item); demoSave(list);
+      return Promise.resolve({ ok: true, n: item.n, p: item.p });
+    }
+    return fetch(CONFIG.API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); });
+  }
+
+  /* ---------- 선물 더미 ---------- */
+  var PALETTE = [
+    ["#c8463d", "#f0c27e"], ["#3f7d5e", "#f3f1ec"], ["#2f4f86", "#f0c27e"], ["#e6dccb", "#c8463d"],
+    ["#8a3b5c", "#f3f1ec"], ["#d08a3a", "#3f7d5e"], ["#5b6f8f", "#f3f1ec"], ["#a33a33", "#e6dccb"]
+  ];
+  function render(animateNewest) {
+    var pile = $("pile");
+    var count = entries.length;
+    $("countNum").textContent = count.toLocaleString("ko-KR");
+    $("tabCount").textContent = count.toLocaleString("ko-KR");
+    $("emptyNote").hidden = count > 0;
+
+    var shown = entries.slice(0, CONFIG.MAX_BOXES).slice().reverse(); // 오래된 것이 아래
+    $("stage").classList.toggle("big", shown.length > 200);
+    pile.textContent = "";
+    var W = pile.clientWidth || 500, H = pile.clientHeight || 280;
+    var n = shown.length;
+    // 크기: 피라미드가 무대 높이 안에 들어가는 가장 큰 상자 크기를 찾는다
+    function layout(size) {
+      var gap = Math.max(2, size * 0.06), rowH = size * 0.86, out = [], y = 0, rowW = W, i = 0;
+      while (i < n) {
+        var per = Math.max(1, Math.floor((rowW + gap) / (size + gap)));
+        var cnt = Math.min(per, n - i), span = cnt * (size + gap) - gap;
+        for (var c = 0; c < cnt; c++) out.push({ left: (W - span) / 2 + c * (size + gap), bottom: y });
+        i += cnt; y += rowH;
+        rowW = Math.max(size * 3, rowW - size * 0.7);
+      }
+      return { pos: out, height: y };
+    }
+    var size = 92, plan = layout(size);
+    while (size > 5 && plan.height > H) { size -= size > 30 ? 2 : 0.5; plan = layout(size); }
+    var placed = plan.pos;
+    shown.forEach(function (e, i) {
+      var p = placed[i];
+      var w = size * (0.86 + ((i * 37) % 23) / 100);
+      var h = size * (0.78 + ((i * 53) % 19) / 100);
+      var pal = PALETTE[(entries.length - CONFIG.MAX_BOXES > 0 ? entries.length - shown.length + i : i) % PALETTE.length];
+      var el = document.createElement("div");
+      el.className = "box";
+      el.style.width = w + "px"; el.style.height = h + "px";
+      el.style.left = (p.left + (size - w) / 2) + "px";
+      el.style.bottom = p.bottom + "px";
+      el.style.background = pal[0];
+      el.style.setProperty("--rib", pal[1]);
+      el.style.setProperty("--fs", Math.max(8, Math.min(13, size / 5.2)) + "px");
+      if (size < 30) el.classList.add("tiny");
+      el.style.transform = "rotate(" + (((i * 29) % 9) - 4) + "deg)";
+      var s = document.createElement("span");
+      s.textContent = e.n;
+      el.appendChild(s);
+      if (animateNewest && i === shown.length - 1) el.classList.add("new");
+      pile.appendChild(el);
+    });
+    $("pileFoot").textContent = count > CONFIG.MAX_BOXES
+      ? "최근 " + CONFIG.MAX_BOXES + "개 상자만 쌓아 보여 드려요. 전체 " + count.toLocaleString("ko-KR") + "명은 오른쪽 참여자 명단에서 볼 수 있어요."
+      : "상자에는 이름 가운데 글자를 가려서 보여 드려요. 전체 명단은 오른쪽 참여자 명단 버튼에서 볼 수 있어요.";
+    renderList();
+  }
+  function renderList() {
+    var ol = $("list");
+    ol.textContent = "";
+    var q = ($("tailSearch").value || "").replace(/\D/g, "");
+    var frag = document.createDocumentFragment(), hits = 0;
+    entries.forEach(function (e, i) {
+      if (q && String(e.p).indexOf(q) === -1) return;
+      hits++;
+      var li = document.createElement("li");
+      if (q) li.className = "hit";
+      var no = document.createElement("span"); no.className = "no"; no.textContent = String(entries.length - i);
+      var who = document.createElement("span"); who.className = "who"; who.textContent = e.n;
+      var tail = document.createElement("span"); tail.className = "tail"; tail.textContent = "···" + e.p;
+      li.appendChild(no); li.appendChild(who); li.appendChild(tail);
+      frag.appendChild(li);
+    });
+    ol.appendChild(frag);
+    $("searchNote").textContent = q ? (hits ? "뒷자리 " + q + "(으)로 " + hits + "명을 찾았어요." : "뒷자리 " + q + "인 참여자가 없어요.") : "";
+    if (!entries.length) {
+      var li = document.createElement("li");
+      li.style.gridTemplateColumns = "1fr";
+      li.textContent = "아직 참여자가 없어요.";
+      ol.appendChild(li);
+    }
+  }
+  $("tailSearch").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+    renderList();
+  });
+  var resizeT;
+  window.addEventListener("resize", function () { clearTimeout(resizeT); resizeT = setTimeout(function () { render(false); }, 150); });
+
+  /* ---------- 걷는 산타 (한 명) ---------- */
+  (function santaWalk() {
+    var santa = $("santa"), stage = $("stage");
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var x = 20, dir = 1, last = performance.now(), pause = 0;
+    function frame(now) {
+      var dt = Math.min(64, now - last); last = now;
+      var max = stage.clientWidth - santa.clientWidth - 10;
+      if (pause > 0) { pause -= dt; }
+      else {
+        x += dir * dt * 0.055;
+        if (x > max) { x = max; dir = -1; pause = 900; }
+        if (x < 10) { x = 10; dir = 1; pause = 900; }
+      }
+      santa.style.transform = "translateX(" + x + "px) scaleX(" + dir + ")";
+      if (!reduce) requestAnimationFrame(frame);
+    }
+    if (reduce) { santa.style.transform = "translateX(20px)"; } else { requestAnimationFrame(frame); }
+  })();
+
+  /* ---------- 전구 줄 ---------- */
+  (function garland() {
+    var g = $("garland"); if (!g) return;
+    var COLORS = ["#ff4a3d", "#3ccf6b", "#ffd36b", "#f5b95a", "#ff4a3d", "#fff1c2"];
+    function draw() {
+      g.textContent = "";
+      var W = g.clientWidth, n = Math.max(10, Math.round(W / 46)), sag = 14;
+      var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("viewBox", "0 0 " + W + " 46"); svg.setAttribute("preserveAspectRatio", "none");
+      var d = "M0 6", seg = W / 4;
+      for (var k = 0; k < 4; k++) d += " Q" + (seg * k + seg / 2) + " " + (6 + sag * 2) + " " + (seg * (k + 1)) + " 6";
+      var p = document.createElementNS(ns, "path"); p.setAttribute("d", d); p.setAttribute("stroke", "#3b3f46"); p.setAttribute("stroke-width", "1.5"); p.setAttribute("fill", "none");
+      svg.appendChild(p); g.appendChild(svg);
+      for (var i = 0; i < n; i++) {
+        var x = (i + .5) * W / n, t = (x % seg) / seg, y = 6 + sag * 4 * t * (1 - t) * .5 * 2;
+        var b = document.createElement("span"); b.className = "bulb";
+        var c = COLORS[i % COLORS.length];
+        b.style.left = (x - 5) + "px"; b.style.top = (y + 2) + "px";
+        b.style.background = c; b.style.boxShadow = "0 0 10px 2px " + c + "99";
+        b.style.animationDelay = (-(i * 0.37) % 2.4) + "s";
+        b.style.transform = "rotate(" + ((i % 2 ? 1 : -1) * 8) + "deg)";
+        g.appendChild(b);
+      }
+    }
+    draw();
+    var t; addEventListener("resize", function () { clearTimeout(t); t = setTimeout(draw, 200); });
+  })();
+
+  /* ---------- 눈 ---------- */
+  (function snow() {
+    var c = $("snow"); if (!c.getContext) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var ctx = c.getContext("2d"), flakes = [], W, H;
+    function size() { W = c.width = innerWidth; H = c.height = innerHeight; }
+    size(); addEventListener("resize", size);
+    var N = Math.min(90, Math.floor(innerWidth / 14));
+    for (var i = 0; i < N; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.8 + .6, s: Math.random() * .5 + .25, w: Math.random() * 2 * Math.PI });
+    (function tick() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(243,241,236,.75)";
+      flakes.forEach(function (f) {
+        f.y += f.s; f.w += .01; f.x += Math.sin(f.w) * .3;
+        if (f.y > H + 4) { f.y = -4; f.x = Math.random() * W; }
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
+      });
+      requestAnimationFrame(tick);
+    })();
+  })();
+
+  /* ---------- 명단 서랍 ---------- */
+  function setDrawer(open) {
+    $("drawer").classList.toggle("open", open);
+    $("drawer").setAttribute("aria-hidden", String(!open));
+    $("drawerTab").setAttribute("aria-expanded", String(open));
+    $("scrim").hidden = !open;
+    if (open) { fetchList(); $("drawerClose").focus(); } else { $("drawerTab").focus(); }
+  }
+  $("drawerTab").addEventListener("click", function () { setDrawer(true); });
+  $("drawerClose").addEventListener("click", function () { setDrawer(false); });
+  $("scrim").addEventListener("click", function () { setDrawer(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { if (!$("reveal").hidden) closeReveal(); else if ($("drawer").classList.contains("open")) setDrawer(false); }
+  });
+
+  /* ---------- 폼 ---------- */
+  var phone = $("phone");
+  phone.addEventListener("input", function () {
+    var d = phone.value.replace(/\D/g, "").slice(0, 11);
+    phone.value = d.length < 4 ? d : d.length < 8 ? d.slice(0, 3) + "-" + d.slice(3) : d.slice(0, 3) + "-" + d.slice(3, d.length - 4) + "-" + d.slice(-4);
+  });
+  $("insta").addEventListener("input", function (e) { e.target.value = e.target.value.replace(/^@+/, "").replace(/\s/g, ""); });
+
+  function setErr(id, msg) { $("err-" + id).textContent = msg || ""; }
+  function radio(name) { var r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ""; }
+  function validate() {
+    var ok = true, first = null;
+    var insta = $("insta").value.trim().replace(/^@+/, "");
+    var name = $("name").value.trim();
+    var digits = phone.value.replace(/\D/g, "");
+    var email = $("email").value.trim();
+    ["insta", "name", "phone", "email", "consent"].forEach(function (k) { setErr(k, ""); });
+    if (!/^[A-Za-z0-9._]{1,30}$/.test(insta)) { setErr("insta", "영문·숫자·마침표·밑줄로 된 인스타그램 계정을 입력해 주세요."); ok = false; first = first || $("insta"); }
+    if (name.length < 2) { setErr("name", "이름을 두 글자 이상 입력해 주세요."); ok = false; first = first || $("name"); }
+    if (!/^01[016789]\d{7,8}$/.test(digits)) { setErr("phone", "010으로 시작하는 휴대폰 번호를 입력해 주세요."); ok = false; first = first || phone; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr("email", "이메일 주소 형식을 확인해 주세요."); ok = false; first = first || $("email"); }
+    if (!$("agreePrivacy").checked || !$("agreeAge").checked) { setErr("consent", "필수 항목 두 가지에 체크해야 응모할 수 있어요."); ok = false; first = first || $("agreePrivacy"); }
+    if (first) first.focus();
+    return ok ? { insta: insta, name: name, phone: digits, gender: radio("gender"), stayed: radio("stayed"), email: email, region: $("region").value,
+      agreePrivacy: true, agreeAge: true, agreeMarketing: $("agreeMarketing").checked } : null;
+  }
+
+  $("entryForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var msg = $("formMsg"); msg.textContent = ""; msg.className = "form-msg";
+    var payload = validate();
+    if (!payload) return;
+    var btn = $("submitBtn"); btn.disabled = true; btn.textContent = "상자 포장 중…";
+    submitEntry(payload).then(function (res) {
+      if (res && res.ok) {
+        entries.unshift({ n: res.n, p: res.p, t: new Date().toISOString() });
+        $("entryForm").reset();
+        openReveal(res.n);
+      } else {
+        msg.className = "form-msg bad";
+        msg.textContent = (res && res.message) || "응모하지 못했어요. 잠시 후 다시 시도해 주세요.";
+      }
+    }).catch(function () {
+      msg.className = "form-msg bad";
+      msg.textContent = "인터넷 연결을 확인하고 다시 눌러 주세요.";
+    }).then(function () { btn.disabled = false; btn.textContent = "선물상자 올리기"; });
+  });
+
+  /* ---------- 응모 완료 연출 ---------- */
+  function openReveal(masked) {
+    var r = $("reveal");
+    $("revealName").textContent = masked + " 님";
+    $("revealSub").textContent = "선물상자가 쌓였어요. 응모가 끝났어요. 인스타그램 스토리에 " + CONFIG.TAG + " 태그를 꼭 남겨 주세요.";
+    // 애니메이션 다시 재생
+    r.hidden = false;
+    r.querySelectorAll(".gift, .gift *, .reveal-name, .reveal-sub, .reveal .btn").forEach(function (el) { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
+    setTimeout(function () { $("revealClose").focus(); }, 50);
+  }
+  function closeReveal() {
+    $("reveal").hidden = true;
+    render(true);
+    $("stage").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  $("revealClose").addEventListener("click", closeReveal);
+
+  render(false);
+  fetchList();
+  if (!DEMO) setInterval(fetchList, 30000);
+})();
+</script>
+</body>
+</html>
